@@ -1,0 +1,43 @@
+version: "3"
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '29092:29092'
+      - '9093:9093'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:SASL_SSL,CLIENT:SASL_SSL
+      - KAFKA_CFG_LISTENERS=INTERNAL://:9093,CLIENT://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9093,CLIENT://localhost:29092
+      
+      - KAFKA_CFG_SASL_ENABLED_MECHANISMS=PLAIN
+      - KAFKA_CFG_SASL_MECHANISM_INTER_BROKER_PROTOCOL=PLAIN
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+
+      - KAFKA_CLIENT_USERS=user,client
+      - KAFKA_CLIENT_PASSWORDS=bitnami,client-secret
+      - KAFKA_INTER_BROKER_USER=kafka
+      - KAFKA_INTER_BROKER_PASSWORD=kafka_password
+      - KAFKA_CERTIFICATE_PASSWORD=password
+      - KAFKA_CFG_TLS_TYPE=JKS
+      - KAFKA_CFG_TLS_CLIENT_AUTH=none
+      - KAFKA_ZOOKEEPER_TLS_VERIFY_HOSTNAME=false
+
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ZOOKEEPER_PROTOCOL=PLAINTEXT
+      - KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM=
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    volumes:
+      - './keystore/kafka.keystore.jks:/opt/bitnami/kafka/config/certs/kafka.keystore.jks:ro'
+      - './truststore/kafka.truststore.jks:/opt/bitnami/kafka/config/certs/kafka.truststore.jks:ro'
+    depends_on:
+      - zookeeper
